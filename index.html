@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOWKEY LOOT // EXCLUSIVE BATCH DROPS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0a0b0d;
+            --surface-card: #14161b;
+            --surface-card-hover: #1c1f26;
+            --border-subtle: #242832;
+            --border-gold: rgba(212, 175, 55, 0.4);
+            --gold-primary: #d4af37;
+            --gold-gradient: linear-gradient(135deg, #d4af37 0%, #aa820a 100%);
+            --text-main: #f3f4f6;
+            --text-muted: #8e95a5;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            line-height: 1.5;
+            padding-bottom: 90px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(10, 11, 13, 0.85);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 1rem 5%;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .brand-cluster { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .brand-logo {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            object-fit: contain;
+            background: #000;
+            border: 1px solid var(--border-gold);
+            padding: 2px;
+        }
+        .brand-title {
+            font-family: var(--font-display);
+            font-size: 1.25rem; font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            text-transform: uppercase;
+        }
+
+        .nav-actions { display: flex; align-items: center; gap: 10px; }
+        .nav-btn {
+            background: var(--surface-card);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            font-size: 0.85rem; font-weight: 600;
+            padding: 8px 14px; border-radius: 8px;
+            cursor: pointer; transition: all 0.2s ease;
+        }
+        .nav-btn:hover { border-color: var(--gold-primary); }
+        .nav-btn-gold {
+            background: var(--gold-gradient);
+            color: #000; font-weight: 700; border: none;
+        }
+
+        .hero {
+            padding: 3.5rem 5% 2rem;
+            max-width: 900px; margin: 0 auto;
+            text-align: center;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--border-gold);
+            color: var(--gold-primary);
+            font-size: 0.75rem; font-weight: 700;
+            letter-spacing: 1px; text-transform: uppercase;
+            padding: 6px 14px; border-radius: 50px; margin-bottom: 1rem;
+        }
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 700; line-height: 1.15;
+            letter-spacing: -1px; margin-bottom: 0.75rem;
+        }
+        .hero p { color: var(--text-muted); font-size: 0.95rem; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 5%; }
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px; margin-top: 2rem;
+        }
+        .product-card {
+            background: var(--surface-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px; overflow: hidden;
+            display: flex; flex-direction: column;
+            transition: all 0.25s ease;
+        }
+        .product-card:hover {
+            border-color: var(--border-gold);
+            background: var(--surface-card-hover);
+            transform: translateY(-4px);
+        }
+        .product-img-box {
+            position: relative; width: 100%; height: 260px;
+            background: #0d0f12; overflow: hidden;
+        }
+        .product-img-box img {
+            width: 100%; height: 100%; object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+        .product-card:hover .product-img-box img { transform: scale(1.04); }
+        .product-details { padding: 20px; display: flex; flex-direction: column; flex-grow: 1; }
+        .product-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+        .product-desc { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 16px; flex-grow: 1; }
+        .product-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .product-price { font-size: 1.25rem; font-weight: 700; color: var(--gold-primary); }
+
+        .btn-action {
+            background: var(--gold-gradient);
+            color: #000; border: none;
+            padding: 10px 18px; border-radius: 8px;
+            font-size: 0.85rem; font-weight: 700;
+            cursor: pointer; text-transform: uppercase;
+            transition: opacity 0.2s ease;
+        }
+        .btn-action:hover { opacity: 0.9; }
+
+        /* Modal Overlays */
+        .modal {
+            display: none; position: fixed; inset: 0;
+            background: rgba(5, 6, 8, 0.88);
+            backdrop-filter: blur(8px);
+            z-index: 1000; justify-content: center; align-items: center;
+            padding: 20px;
+        }
+        .modal.active { display: flex; }
+        .modal-card {
+            background: var(--surface-card);
+            border: 1px solid var(--border-gold);
+            border-radius: 20px; width: 100%; max-width: 520px;
+            padding: 28px; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+        }
+        .modal-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 12px; }
+        .modal-top h3 { font-family: var(--font-display); font-size: 1.2rem; color: var(--text-main); }
+        .modal-close {
+            background: #20242c; color: var(--text-muted);
+            border: none; border-radius: 50%;
+            width: 32px; height: 32px; font-size: 1rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .modal-close:hover { color: #fff; }
+
+        .form-row { margin-bottom: 14px; }
+        .form-row label { display: block; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 6px; }
+        .form-input {
+            width: 100%; padding: 12px 14px;
+            background: #0c0d10; border: 1px solid var(--border-subtle);
+            border-radius: 10px; color: #fff; font-family: var(--font-body);
+            font-size: 0.95rem; outline: none; transition: border-color 0.2s ease;
+        }
+        .form-input:focus { border-color: var(--gold-primary); }
+
+        .qr-section {
+            background: #0d0f13; border: 1px solid var(--border-subtle);
+            border-radius: 14px; padding: 18px; text-align: center; margin: 16px 0;
+        }
+        .qr-click-wrapper {
+            cursor: pointer; display: inline-block;
+            background: #fff; padding: 12px; border-radius: 10px;
+            transition: transform 0.2s ease;
+        }
+        .qr-click-wrapper:hover { transform: scale(1.02); }
+
+        .upi-direct-btn {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            width: 100%; margin-top: 12px;
+            background: #1b1e26; border: 1px solid var(--border-gold);
+            color: var(--gold-primary); font-size: 0.85rem; font-weight: 700;
+            padding: 12px; border-radius: 10px; text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .upi-direct-btn:hover { background: var(--surface-card-hover); }
+
+        .cart-line { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="#" class="brand-cluster">
+            <img src="logo.png" alt="Logo" class="brand-logo" onerror="this.src='https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100'">
+            <span class="brand-title">Lowkey Loot</span>
+        </a>
+        <div class="nav-actions">
+            <button class="nav-btn" onclick="openModal('termsModal')">Terms</button>
+            <button class="nav-btn" onclick="openModal('ordersModal')">Orders</button>
+            <button class="nav-btn nav-btn-gold" onclick="openModal('cartModal')">Cart (<span id="cartCount">0</span>)</button>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-badge">Batch 01 // Handpicked Gear</div>
+        <h1>Engineered Quality. Zero Compromise.</h1>
+        <p>100% Secure UPI Settlement • 21–25 Working Days Dispatch (Location Dependent) • Ledger-Verified Processing</p>
+    </section>
+
+    <main class="container">
+        <div id="productsGrid" class="products-grid"></div>
+    </main>
+
+    <!-- Checkout Modal -->
+    <div id="cartModal" class="modal">
+        <div class="modal-card">
+            <div class="modal-top">
+                <h3>Order Checkout</h3>
+                <button class="modal-close" onclick="closeModal('cartModal')">✕</button>
+            </div>
+            <div id="cartItemsList"></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding: 12px 0; margin-bottom: 14px; font-size: 1.15rem; font-weight: 700;">
+                <span>Total Amount:</span>
+                <span id="cartTotal" style="color: var(--gold-primary);">₹0</span>
+            </div>
+
+            <div class="form-row">
+                <label>Full Name</label>
+                <input type="text" id="custName" class="form-input" placeholder="Receiver full name">
+            </div>
+            <div class="form-row">
+                <label>10-Digit Mobile</label>
+                <input type="tel" id="custPhone" class="form-input" placeholder="Phone number for courier updates">
+            </div>
+            <div class="form-row">
+                <label>Shipping Address</label>
+                <textarea id="custAddress" rows="2" class="form-input" placeholder="House no, street, city, pin code"></textarea>
+            </div>
+
+            <!-- Interactive UPI Container -->
+            <div class="qr-section">
+                <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">SCAN OR TAP QR TO OPEN UPI APP</p>
+                <div id="upiQrWrap" class="qr-click-wrapper" onclick="triggerDirectUPI()">
+                    <div id="upiQrContainer"></div>
+                </div>
+                
+                <a id="directUpiLink" href="#" class="upi-direct-btn">
+                    <span>⚡ Pay Directly via UPI App</span>
+                </a>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 8px; margin: 14px 0;">
+                <input type="checkbox" id="termsCheck" style="accent-color: var(--gold-primary); width: 18px; height: 18px;">
+                <label for="termsCheck" style="font-size: 0.8rem; color: var(--text-muted);">
+                    I agree to the <a href="#" onclick="openModal('termsModal'); return false;" style="color: var(--gold-primary);">Safety & Refund Policy</a>
+                </label>
+            </div>
+
+            <button id="submitOrderBtn" class="btn-action" style="width: 100%; padding: 14px; font-size: 0.95rem;" onclick="processOrderAutomated()">
+                Confirm & Place Order
+            </button>
+        </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div id="termsModal" class="modal">
+        <div class="modal-card">
+            <div class="modal-top">
+                <h3>Store Policy & Terms</h3>
+                <button class="modal-close" onclick="closeModal('termsModal')">✕</button>
+            </div>
+            <div style="font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 12px; line-height: 1.6;">
+                <p><strong style="color: #fff;">1. Payment:</strong> Advance payment via UPI only. No COD. Orders are dispatched after manual ledger verification.</p>
+                <p><strong style="color: #fff;">2. Shipping & Delivery:</strong> Estimated transit time is 21 to 25 working days across India, subject to regional logistics and customer location.</p>
+                <p><strong style="color: #fff;">3. Replacements:</strong> A continuous unboxing video recorded from seal opening is strictly mandatory within 48 hours for any transit damage or missing item claims.</p>
+                <p><strong style="color: #fff;">4. Privacy:</strong> Contact info and delivery addresses are utilized solely for logistics dispatch and never shared.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Orders Modal -->
+    <div id="ordersModal" class="modal">
+        <div class="modal-card">
+            <div class="modal-top">
+                <h3>My Placed Orders</h3>
+                <button class="modal-close" onclick="closeModal('ordersModal')">✕</button>
+            </div>
+            <div id="localOrdersList"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        const CONFIG = {
+            storeName: "Lowkey Loot",
+            upiId: "6301015838@ibl",
+            targetEmail: "lowkeyloot.official@gmail.com",
+            web3FormsKey: "YOUR_WEB3FORMS_ACCESS_KEY_HERE", // Paste free access key from web3forms.com
+            products: [
+                { id: 1, title: "Test Drop Product", price: 10, desc: "Sample checkout verification drop item.", image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600" },
+                { id: 2, title: "Smart NFC Card", price: 799, desc: "Matte black digital link & menu card with embedded chip.", image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600" },
+                { id: 3, title: "Ankle Compression Brace", price: 499, desc: "High-grade joint stability support for athletes.", image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600" }
+            ]
+        };
+
+        let cart = [];
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = CONFIG.products.map(p => `
+                <div class="product-card">
+                    <div class="product-img-box">
+                        <img src="${p.image}" alt="${p.title}">
+                    </div>
+                    <div class="product-details">
+                        <div class="product-title">${p.title}</div>
+                        <div class="product-desc">${p.desc}</div>
+                        <div class="product-footer">
+                            <span class="product-price">₹${p.price}</span>
+                            <button class="btn-action" onclick="addToCart(${p.id})">Add To Bag</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(productId) {
+            const item = CONFIG.products.find(p => p.id === productId);
+            cart.push(item);
+            updateCart();
+            openModal('cartModal');
+        }
+
+        function removeFromCart(idx) {
+            cart.splice(idx, 1);
+            updateCart();
+        }
+
+        function getUpiUri(total) {
+            return `upi://pay?pa=${CONFIG.upiId}&pn=${encodeURIComponent(CONFIG.storeName)}&am=${total}&cu=INR`;
+        }
+
+        function triggerDirectUPI() {
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            if (total > 0) {
+                window.location.href = getUpiUri(total);
+            }
+        }
+
+        function updateCart() {
+            document.getElementById('cartCount').textContent = cart.length;
+            const container = document.getElementById('cartItemsList');
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('cartTotal').textContent = `₹${total}`;
+
+            if (cart.length === 0) {
+                container.innerHTML = `<p style="color: var(--text-muted); font-size: 0.85rem; padding: 10px 0;">Your cart is empty.</p>`;
+            } else {
+                container.innerHTML = cart.map((item, index) => `
+                    <div class="cart-line">
+                        <span>${item.title}</span>
+                        <div>
+                            <span style="color: var(--gold-primary); margin-right: 12px;">₹${item.price}</span>
+                            <span style="color: #ff4757; cursor:pointer;" onclick="removeFromCart(${index})">✕</span>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            const qrBox = document.getElementById('upiQrContainer');
+            qrBox.innerHTML = '';
+            const upiLinkBtn = document.getElementById('directUpiLink');
+
+            if (total > 0) {
+                const uri = getUpiUri(total);
+                upiLinkBtn.href = uri;
+                new QRCode(qrBox, {
+                    text: uri,
+                    width: 160,
+                    height: 160,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff"
+                });
+            } else {
+                upiLinkBtn.href = "#";
+            }
+        }
+
+        async function processOrderAutomated() {
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+            const termsChecked = document.getElementById('termsCheck').checked;
+
+            if (!name || !phone || !address) {
+                alert("Please fill in your name, phone number, and address.");
+                return;
+            }
+            if (!termsChecked) {
+                alert("Please review and accept the safety terms.");
+                return;
+            }
+            if (cart.length === 0) {
+                alert("Your cart is empty.");
+                return;
+            }
+
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            const orderId = "LL-" + Math.floor(100000 + Math.random() * 900000);
+            const btn = document.getElementById('submitOrderBtn');
+            btn.disabled = true;
+            btn.textContent = "Processing Order...";
+
+            const orderPayload = {
+                order_id: orderId,
+                name: name,
+                phone: phone,
+                address: address,
+                items: cart.map(i => `${i.title} (₹${i.price})`).join(', '),
+                total: `₹${total}`,
+                date: new Date().toLocaleDateString()
+            };
+
+            // Background Dispatch
+            if (CONFIG.web3FormsKey && CONFIG.web3FormsKey !== "YOUR_WEB3FORMS_ACCESS_KEY_HERE") {
+                try {
+                    await fetch("https://api.web3forms.com/submit", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            access_key: CONFIG.web3FormsKey,
+       
