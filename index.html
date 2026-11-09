@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOWKEY LOOT // RAW DROPS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f4f0ea;
+            --card-bg: #ffffff;
+            --text-main: #000000;
+            --border-hard: 3px solid #000000;
+            --accent-lime: #ccff00;
+            --accent-pink: #ff0055;
+            --shadow-hard: 4px 4px 0px #000000;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Space Mono', monospace; }
+        body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.4; padding-bottom: 80px; }
+
+        header {
+            background: var(--card-bg);
+            border-bottom: var(--border-hard);
+            position: sticky; top: 0; z-index: 100;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1rem 3%;
+        }
+
+        .logo-area { display: flex; align-items: center; gap: 12px; }
+        .logo-area img { width: 45px; height: 45px; border: var(--border-hard); object-fit: cover; }
+        .logo-area h1 { font-size: 1.3rem; font-weight: 700; text-transform: uppercase; letter-spacing: -1px; background: var(--accent-lime); padding: 2px 6px; border: 2px solid #000; }
+
+        .nav-buttons { display: flex; gap: 10px; align-items: center; }
+        .btn { background: #fff; border: var(--border-hard); color: var(--text-main); padding: 8px 14px; font-weight: 700; cursor: pointer; text-transform: uppercase; box-shadow: var(--shadow-hard); transition: 0.05s ease; }
+        .btn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #000; }
+        .btn-primary { background: var(--accent-lime); }
+        .btn-pink { background: var(--accent-pink); color: #fff; }
+
+        .hero { text-align: center; padding: 3rem 1rem 2rem; max-width: 800px; margin: 0 auto; }
+        .hero h2 { font-size: 2.2rem; font-weight: 700; text-transform: uppercase; margin-bottom: 10px; background: #000; color: #fff; display: inline-block; padding: 0 10px; }
+        .hero p { font-size: 0.95rem; font-weight: 700; border: var(--border-hard); background: var(--accent-lime); display: inline-block; padding: 6px 12px; margin-top: 10px; box-shadow: var(--shadow-hard); }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 3%; }
+        
+        .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 24px; margin-top: 2rem; }
+        .product-card { background: var(--card-bg); border: var(--border-hard); box-shadow: var(--shadow-hard); overflow: hidden; display: flex; flex-direction: column; }
+        .product-img { width: 100%; height: 240px; object-fit: cover; border-bottom: var(--border-hard); background: #eee; }
+        .product-info { padding: 16px; display: flex; flex-direction: column; flex-grow: 1; }
+        .product-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; }
+        .product-price { font-size: 1.2rem; font-weight: 700; background: #000; color: var(--accent-lime); padding: 4px 8px; margin-bottom: 12px; display: inline-block; align-self: flex-start; }
+        .product-card .btn { margin-top: auto; width: 100%; text-align: center; }
+
+        /* Modal Overlays */
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; padding: 20px; }
+        .modal.active { display: flex; }
+        .modal-content { background: var(--card-bg); border: var(--border-hard); box-shadow: 8px 8px 0px var(--accent-pink); width: 100%; max-width: 520px; padding: 24px; max-height: 90vh; overflow-y: auto; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; border-bottom: var(--border-hard); padding-bottom: 8px; }
+        .close-btn { background: var(--accent-pink); color: #fff; border: var(--border-hard); font-size: 1.2rem; font-weight: 700; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 2px 2px 0px #000; }
+
+        /* Cart & Checkout */
+        .cart-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 2px solid #000; font-weight: 700; }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; text-transform: uppercase; }
+        .form-group input, .form-group textarea { width: 100%; padding: 12px; background: #fff; border: var(--border-hard); font-family: 'Space Mono', monospace; font-size: 0.95rem; font-weight: 700; }
+        .form-group input:focus, .form-group textarea:focus { outline: none; background: var(--accent-lime); }
+        
+        .qr-box { text-align: center; margin: 15px 0; background: #fff; border: var(--border-hard); padding: 15px; box-shadow: var(--shadow-hard); }
+        .qr-box img { width: 160px; height: 160px; margin: 0 auto; display: block; }
+
+        .terms-content p { margin-bottom: 12px; font-size: 0.8rem; font-weight: 700; border-left: 4px solid #000; padding-left: 8px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <img src="logo.png" alt="Logo" onerror="this.src='https://via.placeholder.com/45?text=LL'">
+            <h1>Lowkey Loot</h1>
+        </div>
+        <div class="nav-buttons">
+            <button class="btn" onclick="openModal('termsModal')">Terms</button>
+            <button class="btn" onclick="openModal('ordersModal')">Orders</button>
+            <button class="btn btn-primary" onclick="openModal('cartModal')">Cart [<span id="cartCount">0</span>]</button>
+        </div>
+    </header>
+
+    <section class="hero">
+        <h2>Unapologetic Curated Drops</h2>
+        <div>
+            <p>NO COD // UPI ONLY // 7-15 DAYS DELIVERY</p>
+        </div>
+    </section>
+
+    <main class="container">
+        <div id="productsGrid" class="products-grid"></div>
+    </main>
+
+    <!-- Cart Modal -->
+    <div id="cartModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>// YOUR CART</h3>
+                <button class="close-btn" onclick="closeModal('cartModal')">X</button>
+            </div>
+            <div id="cartItemsList"></div>
+            <div style="margin-top: 16px; font-weight: 700; font-size: 1.1rem; display: flex; justify-content: space-between; border-top: var(--border-hard); padding-top: 10px;">
+                <span>TOTAL:</span>
+                <span id="cartTotal">₹0</span>
+            </div>
+
+            <div style="margin-top: 20px;">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="custName" placeholder="ENTER NAME">
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="custPhone" placeholder="10-DIGIT MOBILE">
+                </div>
+                <div class="form-group">
+                    <label>Complete Delivery Address</label>
+                    <textarea id="custAddress" rows="3" placeholder="HOUSE NO, STREET, CITY, PINCODE"></textarea>
+                </div>
+
+                <div class="qr-box">
+                    <div id="upiQrContainer"></div>
+                    <p style="color: #000; font-size: 0.75rem; margin-top: 8px; font-weight: 700; text-transform: uppercase;">Scan with GPay / PhonePe / Paytm</p>
+                </div>
+
+                <div class="form-group" style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="termsCheck" style="width: 20px; height: 20px; accent-color: #000;">
+                    <label for="termsCheck" style="margin:0; font-size: 0.8rem; cursor:pointer;">I AGREE TO <a href="#" onclick="openModal('termsModal'); return false;" style="color: var(--accent-pink);">TERMS & CONDITIONS</a></label>
+                </div>
+
+                <button class="btn btn-pink" style="width: 100%; margin-top: 10px;" onclick="sendOrderEmail()">SEND ORDER BY EMAIL</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div id="termsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>// TERMS & CONDITIONS & PRIVACY</h3>
+                <button class="close-btn" onclick="closeModal('termsModal')">X</button>
+            </div>
+            <div class="terms-content">
+                <p><strong>1. PAYMENT & VERIFICATION:</strong> 100% advance payment via UPI only. No Cash on Delivery (COD). Orders are processed only after physical bank ledger credit verification.</p>
+                <p><strong>2. PRIVACY & DATA USAGE:</strong> Customer data (Name, Phone, Address) is collected solely for fulfillment and communication via lowkeyloot.official@gmail.com. Data is never sold, traded, or shared with third parties.</p>
+                <p><strong>3. FULFILLMENT & DELIVERY:</strong> Standard delivery takes 7 to 15 business days after payment confirmation. Delays caused by third-party courier partners are outside direct control.</p>
+                <p><strong>4. CANCELLATIONS:</strong> Cancellations are accepted only prior to supplier order placement. Full refunds are issued for valid pre-shipment cancellations.</p>
+                <p><strong>5. RETURNS & REFUNDS:</strong> All sales are final. General returns/exchanges are not accepted. Approved refunds are routed back to the original UPI ID within 5 to 7 working days.</p>
+                <p><strong>6. DAMAGED / WRONG ITEMS:</strong> Must be reported via email with mandatory unboxing video proof within 48 hours of delivery for replacement/refund review.</p>
+                <p><strong>7. PRICE & STOCK RIGHTS:</strong> Lowkey Loot reserves the right to cancel orders and issue full refunds if supplier prices fluctuate severely or items go out of stock.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Orders Modal -->
+    <div id="ordersModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>// SAVED ORDERS</h3>
+                <button class="close-btn" onclick="closeModal('ordersModal')">X</button>
+            </div>
+            <div id="localOrdersList">
+                <p style="font-size: 0.85rem; font-weight: 700;">No local orders saved on this device.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        const CONFIG = {
+            storeName: "Lowkey Loot",
+            upiId: "6301015838@ibl",
+            orderEmail: "lowkeyloot.official@gmail.com",
+            products: [
+                { id: 1, title: "Test Item (₹10)", price: 10, image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=500" },
+                { id: 2, title: "Smart NFC Card", price: 799, image: "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=500" },
+                { id: 3, title: "Pro Ankle Support Brace", price: 499, image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=500" }
+            ]
+        };
+
+        let cart = [];
+
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = CONFIG.products.map(p => `
+                <div class="product-card">
+                    <img src="${p.image}" alt="${p.title}" class="product-img">
+                    <div class="product-info">
+                        <div class="product-title">${p.title}</div>
+                        <div class="product-price">₹${p.price}</div>
+                        <button class="btn btn-primary" onclick="addToCart(${p.id})">ADD TO CART</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(productId) {
+            const product = CONFIG.products.find(p => p.id === productId);
+            cart.push(product);
+            updateCartUI();
+            openModal('cartModal');
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartUI();
+        }
+
+        function updateCartUI() {
+            document.getElementById('cartCount').textContent = cart.length;
+            const list = document.getElementById('cartItemsList');
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('cartTotal').textContent = `₹${total}`;
+
+            if (cart.length === 0) {
+                list.innerHTML = '<p style="font-size: 0.85rem; font-weight: 700;">CART IS EMPTY.</p>';
+            } else {
+                list.innerHTML = cart.map((item, idx) => `
+                    <div class="cart-item">
+                        <span>${item.title}</span>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <span>₹${item.price}</span>
+                            <button class="close-btn" style="width: 24px; height: 24px; font-size: 0.8rem;" onclick="removeFromCart(${idx})">X</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            const qrContainer = document.getElementById('upiQrContainer');
+            qrContainer.innerHTML = '';
+            if (total > 0) {
+                const upiString = `upi://pay?pa=${CONFIG.upiId}&pn=${encodeURIComponent(CONFIG.storeName)}&am=${total}&cu=INR`;
+                new QRCode(qrContainer, {
+                    text: upiString,
+                    width: 160,
+                    height: 160
+                });
+            }
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function sendOrderEmail() {
+            const name = document.getElementById('custName').value.trim();
+            const phone = document.getElementById('custPhone').value.trim();
+            const address = document.getElementById('custAddress').value.trim();
+            const termsChecked = document.getElementById('termsCheck').checked;
+
+            if (!name || !phone || !address) {
+                alert('PLEASE FILL ALL DELIVERY DETAILS.');
+                return;
+            }
+            if (!termsChecked) {
+                alert('PLEASE AGREE TO TERMS & CONDITIONS.');
+                return;
+            }
+            if (cart.length === 0) {
+                alert('YOUR CART IS EMPTY.');
+                return;
+            }
+
+            const orderId = 'LL-' + Math.floor(100000 + Math.random() * 900000);
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            const itemsList = cart.map(i => `- ${i.title} (₹${i.price})`).join('\n');
+
+            const emailSubject = encodeURIComponent(`NEW ORDER [${orderId}] - ${name}`);
+            const emailBody = encodeURIComponent(
+                `ORDER ID: ${orderId}\n` +
+                `CUSTOMER NAME: ${name}\n` +
+                `PHONE: ${phone}\n` +
+                `DELIVERY ADDRESS:\n${address}\n\n` +
+                `ITEMS:\n${itemsList}\n\n` +
+                `TOTAL AMOUNT: ₹${total}\n` +
+                `UPI ID: ${CONFIG.upiId}\n\n` +
+                `---\nPAID VIA UPI. VERIFY LEDGER BALANCE BEFORE FULFILLING.`
+            );
+
+            saveLocalOrder({ orderId, total, date: new Date().toLocaleDateString(), items: cart });
+            window.location.href = `mailto:${CONFIG.orderEmail}?subject=${emailSubject}&body=${emailBody}`;
+        }
+
+        function saveLocalOrder(order) {
+            let orders = JSON.parse(localStorage.getItem('lowkey_loot_orders') || '[]');
+            orders.unshift(order);
+            localStorage.setItem('lowkey_loot_orders', JSON.stringify(orders));
+            loadLocalOrders();
+        }
+
+        function loadLocalOrders() {
+            let orders = JSON.parse(localStorage.getItem('lowkey_loot_orders') || '[]');
+            const container = document.getElementById('localOrdersList');
+            if (orders.length === 0) {
+                container.innerHTML = '<p style="font-size: 0.85rem; font-weight: 700;">NO LOCAL ORDERS SAVED YET.</p>';
+                return;
+            }
+            container.innerHTML = orders.map(o => `
+                <div style="background: #fff; padding: 10px; border: 2px solid #000; margin-bottom: 8px;">
+                    <div style="font-weight: 700; font-size: 0.85rem;">${o.orderId}</div>
+                    <div style="font-size: 0.75rem;">DATE: ${o.date} | TOTAL: ₹${o.total}</div>
+                </div>
+            `).join('');
+        }
+
+        renderProducts();
+        loadLocalOrders();
+    </script>
+</body>
+</html>
