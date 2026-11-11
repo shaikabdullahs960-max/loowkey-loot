@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lowkey Loot | Curated Online Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+    
+    <script>
+        var CONFIG = {
+            storeName: "Lowkey Loot",
+            upiId: "6301015838@ibl",
+            ownerEmail: "lowkeyloot.official@gmail.com"
+        };
+
+        var cart = [];
+        var allowLocalStorage = true;
+
+        function sanitize(str) {
+            if (!str) return "";
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function openModal(id) {
+            var el = document.getElementById(id);
+            if (el) {
+                el.style.display = 'flex';
+            }
+            window.location.hash = id;
+        }
+
+        function closeModal(id) {
+            var el = document.getElementById(id);
+            if (el) {
+                el.style.display = 'none';
+            }
+            window.location.hash = 'store';
+        }
+
+        function setStorageConsent(status) {
+            allowLocalStorage = status;
+            var banner = document.getElementById('cookieBanner');
+            if (banner) banner.style.display = 'none';
+            if (!status) {
+                try { localStorage.removeItem('ll_orders'); } catch(e) {}
+            }
+        }
+
+        function addToCart(id, title, price) {
+            cart.push({ id: id, title: title, price: price });
+            updateCart();
+            openModal('cartModal');
+        }
+
+        function removeFromCart(idx) {
+            cart.splice(idx, 1);
+            updateCart();
+        }
+
+        function updateCart() {
+            var countEl = document.getElementById('cartCount');
+            if (countEl) countEl.innerText = cart.length;
+
+            var container = document.getElementById('cartItemsList');
+            var total = 0;
+            for (var i = 0; i < cart.length; i++) {
+                total += cart[i].price;
+            }
+
+            var totalEl = document.getElementById('cartTotal');
+            if (totalEl) totalEl.innerText = "₹" + total;
+
+            if (container) {
+                if (cart.length === 0) {
+                    container.innerHTML = '<p style="color: #8e95a5; font-size: 0.85rem; padding: 10px 0;">Your shopping bag is empty.</p>';
+                } else {
+                    var html = '';
+                    for (var j = 0; j < cart.length; j++) {
+                        html += '<div class="cart-line">' +
+                            '<span>' + sanitize(cart[j].title) + '</span>' +
+                            '<div>' +
+                                '<span style="color: #d4af37; margin-right: 12px;">₹' + cart[j].price + '</span>' +
+                                '<span style="color: #ff4757; cursor:pointer; font-weight:bold;" onclick="removeFromCart(' + j + ')">✕</span>' +
+                            '</div>' +
+                        '</div>';
+                    }
+                    container.innerHTML = html;
+                }
+            }
+
+            var upiLinkBtn = document.getElementById('directUpiLink');
+            if (upiLinkBtn) {
+                if (total > 0) {
+                    upiLinkBtn.href = "upi://pay?pa=" + CONFIG.upiId + "&pn=" + encodeURIComponent(CONFIG.storeName) + "&am=" + total + "&cu=INR";
+                } else {
+                    upiLinkBtn.href = "upi://pay?pa=" + CONFIG.upiId + "&pn=" + encodeURIComponent(CONFIG.storeName) + "&cu=INR";
+                }
+            }
+        }
+
+        function toggleUpiAccess() {
+            var c1 = document.getElementById('checkTerms').checked;
+            var c2 = document.getElementById('checkPrivacy').checked;
+            var c3 = document.getElementById('checkAge').checked;
+            var box = document.getElementById('upiPaymentSection');
+            if (box) {
+                box.style.display = (c1 && c2 && c3) ? 'block' : 'none';
+            }
+        }
+
+        function processOrderAutomated() {
+            var name = sanitize(document.getElementById('custName').value.trim());
+            var phone = sanitize(document.getElementById('custPhone').value.trim());
+            var address = sanitize(document.getElementById('custAddress').value.trim());
+            var utr = sanitize(document.getElementById('custUtr').value.trim());
+
+            var c1 = document.getElementById('checkTerms').checked;
+            var c2 = document.getElementById('checkPrivacy').checked;
+            var c3 = document.getElementById('checkAge').checked;
+
+            if (!name || !/^[6-9]\d{9}$/.test(phone) || address.length < 8) {
+                alert("Please enter your full name, a valid 10-digit Indian mobile number, and your complete delivery address.");
+                return;
+            }
+            if (!c1 || !c2 || !c3) {
+                alert("Please tick all 3 consent checkboxes before booking your order.");
+                return;
+            }
+            if (cart.length === 0) {
+                alert("Your shopping bag is empty. Tap 'Add To Bag' on a product first.");
+                return;
+            }
+            if (utr.length < 6) {
+                alert("Please pay via the UPI button first, then enter your 12-digit UPI Reference / UTR Number in Step 2 so the owner can verify your payment.");
+                return;
+            }
+
+            var total = 0;
+            var itemNames = [];
+            for (var i = 0; i < cart.length; i++) {
+                total += cart[i].price;
+                itemNames.push(cart[i].title + " (₹" + cart[i].price + ")");
+            }
+
+            var orderId = "LL-" + Math.floor(100000 + Math.random() * 900000);
+            var orderDate = new Date().toLocaleString('en-IN');
+            var itemsString = itemNames.join(', ');
+
+            var btn = document.getElementById('submitOrderBtn');
+            if (btn) {
+                btn.innerText = "Sending Order to Owner...";
+                btn.disabled = true;
+            }
+
+            fetch("https://formsubmit.co/ajax/" + CONFIG.ownerEmail, {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    _subject: "New Order Pending Owner Check: " + orderId + " (₹" + total + ")",
+                    Order_ID: orderId,
+                    Order_Status: "Pending Owner Verification",
+                    Customer_Name: name,
+                    Mobile_Number: phone,
+                    Delivery_Address: address,
+                    Ordered_Items: itemsString,
+                    Total_Amount: "₹" + total,
+                    UPI_UTR_Number: utr,
+                    Order_Time: orderDate,
+                    DPDP_Consent: "Verified (Terms + Privacy + 18+ Age)"
+                })
+            })
+            .then(function(res) { return res.json(); })
+            .then(function(data) {
+                completeOrderLocally(orderId, itemsString, total, utr, orderDate, btn);
+            })
+            .catch(function(err) {
+                completeOrderLocally(orderId, itemsString, total, utr, orderDate, btn);
+            });
+        }
+
+        function completeOrderLocally(orderId, itemsString, total, utr, orderDate, btn) {
+            if (btn) {
+                btn.innerText = "Send Order for Owner Confirmation";
+                btn.disabled = false;
+            }
+
+            if (allowLocalStorage) {
+                var saved = [];
+                try { saved = JSON.parse(localStorage.getItem('ll_orders') || '[]'); } catch(e) {}
+                saved.unshift({
+                    order_id: orderId,
+                    items: itemsString,
+                    total: "₹" + total,
+                    utr: utr,
+                    status: "Pending Owner Confirmation",
+                    date: orderDate
+                });
+                try { localStorage.setItem('ll_orders', JSON.stringify(saved)); } catch(e) {}
+            }
+
+            alert("Order " + orderId + " Sent to Owner!\n\n• Status: Pending Owner Verification\n• Amount: ₹" + total + " (UTR: " + utr + ")\n• The store owner will verify your payment and confirm your order.\n• Delivery takes 21 to 25 working days after confirmation.");
+            cart = [];
+            document.getElementById('custUtr').value = "";
+            document.getElementById('checkTerms').checked = false;
+            document.getElementById('checkPrivacy').checked = false;
+            document.getElementById('checkAge').checked = false;
+            toggleUpiAccess();
+            updateCart();
+            closeModal('cartModal');
+        }
+
+        function renderOrders() {
+            var list = document.getElementById('localOrdersList');
+            if (!list) return;
+
+            var saved = [];
+            try { saved = JSON.parse(localStorage.getItem('ll_orders') || '[]'); } catch(e) {}
+
+            if (saved.length === 0) {
+                list.innerHTML = '<p style="font-size: 0.85rem; color: #8e95a5;">No saved orders on this device.</p>';
+                return;
+            }
+
+            var out = '';
+            for (var i = 0; i < saved.length; i++) {
+                var o = saved[i];
+                var statusText = o.status ? o.status : "Pending Owner Confirmation";
+                out += '<div style="background: #0d0f12; border: 1px solid #292d38; padding: 12px; border-radius: 10px; margin-bottom: 10px;">' +
+                    '<div style="display:flex; justify-content:space-between; font-weight:700; font-size: 0.9rem;">' +
+                        '<span>' + sanitize(o.order_id) + '</span>' +
+                        '<span style="color: #d4af37;">' + sanitize(o.total) + '</span>' +
+                    '</div>' +
+                    '<div style="font-size: 0.75rem; color: #8e95a5; margin-top: 4px;">Items: ' + sanitize(o.items) + '</div>' +
+                    '<div style="font-size: 0.74rem; color: #d4af37; margin-top: 3px;">Status: ' + sanitize(statusText) + ' (UTR: ' + sanitize(o.utr || 'N/A') + ')</div>' +
+                    '<div style="font-size: 0.72rem; color: #666; margin-top: 2px;">Booked on ' + sanitize(o.date) + '</div>' +
+                '</div>';
+            }
+            list.innerHTML = out;
+        }
+
+        function withdrawConsentAndDelete() {
+            try { localStorage.removeItem('ll_orders'); } catch(e) {}
+            cart = [];
+            updateCart();
+            renderOrders();
+            alert("Consent Withdrawn: Your saved order history and local storage data have been permanently deleted from this device.");
+        }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            renderOrders();
+        });
+              </script>
+                  <style>
+        :root {
+            --bg-base: #0d0e11;
+            --surface-card: #181a20;
+            --surface-hover: #22252e;
+            --border-subtle: #292d38;
+            --border-gold: rgba(212, 175, 55, 0.45);
+            --gold-primary: #d4af37;
+            --gold-gradient: linear-gradient(135deg, #d4af37 0%, #aa820a 100%);
+            --text-main: #f3f4f6;
+            --text-muted: #8e95a5;
+            --font-display: 'Space Grotesk', sans-serif;
+            --font-body: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            line-height: 1.5;
+            padding-bottom: 110px;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(13, 14, 17, 0.95);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 1rem 5%;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 10px;
+        }
+
+        .brand-cluster { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+        .brand-logo-frame {
+            width: 44px; height: 44px;
+            border-radius: 10px;
+            background: #000;
+            border: 1px solid var(--border-gold);
+            overflow: hidden;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .brand-logo-img { width: 100%; height: 100%; object-fit: contain; }
+        .brand-title {
+            font-family: var(--font-display);
+            font-size: 1.25rem; font-weight: 700;
+            letter-spacing: -0.5px;
+            color: var(--text-main);
+            text-transform: uppercase;
+        }
+
+        .nav-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .nav-btn {
+            background: var(--surface-card);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            font-size: 0.8rem; font-weight: 600;
+            padding: 8px 12px; border-radius: 8px;
+            cursor: pointer; text-decoration: none; display: inline-block;
+        }
+        .nav-btn:hover { border-color: var(--border-gold); }
+        .nav-btn-gold {
+            background: var(--gold-gradient);
+            color: #000; font-weight: 700; border: none;
+        }
+
+        .hero {
+            padding: 3rem 5% 1.5rem;
+            max-width: 900px; margin: 0 auto;
+            text-align: center;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid var(--border-gold);
+            color: var(--gold-primary);
+            font-size: 0.72rem; font-weight: 700;
+            letter-spacing: 1px; text-transform: uppercase;
+            padding: 5px 14px; border-radius: 50px; margin-bottom: 0.8rem;
+        }
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: clamp(1.8rem, 5vw, 2.8rem);
+            font-weight: 700; line-height: 1.2;
+            letter-spacing: -0.8px; margin-bottom: 0.5rem;
+        }
+        .hero p { color: var(--text-muted); font-size: 0.9rem; max-width: 600px; margin: 0 auto; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 5%; }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px; margin-top: 2rem;
+        }
+        .product-card {
+            background: var(--surface-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 16px; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        .product-img-box {
+            position: relative; width: 100%; height: 240px;
+            background: #101216; overflow: hidden;
+        }
+        .product-img-box img { width: 100%; height: 100%; object-fit: cover; }
+        .product-details { padding: 18px; display: flex; flex-direction: column; flex-grow: 1; }
+        .product-title { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+        .product-desc { color: var(--text-muted); font-size: 0.82rem; margin-bottom: 14px; flex-grow: 1; }
+        .product-footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
+        .product-price { font-size: 1.25rem; font-weight: 700; color: var(--gold-primary); }
+
+        .btn-action {
+            background: var(--gold-gradient);
+            color: #000; border: none;
+            padding: 10px 18px; border-radius: 8px;
+            font-size: 0.85rem; font-weight: 700;
+            cursor: pointer; text-transform: uppercase;
+            text-decoration: none; display: inline-block; text-align: center;
+        }
+
+        .legal-footer {
+            margin-top: 4rem; padding: 2.5rem 5%;
+            background: var(--surface-card);
+            border-top: 1px solid var(--border-gold);
+            font-size: 0.8rem; color: var(--text-muted);
+        }
+        .footer-grid {
+            max-width: 1200px; margin: 0 auto;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 24px;
+        }
+        .footer-col h4 {
+            font-family: var(--font-display); color: var(--gold-primary);
+            font-size: 0.9rem; margin-bottom: 8px; text-transform: uppercase;
+        }
+        .footer-col p { margin-bottom: 4px; }
+        .footer-col strong { color: var(--text-main); }
+
+        .cookie-banner {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: #121418; border-top: 1px solid var(--border-gold);
+            padding: 12px 5%; z-index: 9000;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 12px; font-size: 0.8rem;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(5, 6, 8, 0.92);
+            backdrop-filter: blur(8px);
+            z-index: 99999;
+            justify-content: center; align-items: center;
+            padding: 16px;
+        }
+        .modal-overlay:target {
+            display: flex !important;
+        }
+        .modal-card {
+            background: var(--surface-card);
+            border: 1px solid var(--border-gold);
+            border-radius: 20px; width: 100%; max-width: 530px;
+            padding: 24px; max-height: 90vh; overflow-y: auto;
+        }
+        .modal-top {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px; border-bottom: 1px solid var(--border-subtle); padding-bottom: 10px;
+        }
+        .modal-top h3 { font-family: var(--font-display); font-size: 1.15rem; color: var(--text-main); }
+        .modal-close {
+            background: #20242c; color: var(--text-muted);
+            border: none; border-radius: 50%;
+            width: 32px; height: 32px; font-size: 1rem;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            text-decoration: none;
+        }
+
+        .form-row { margin-bottom: 12px; }
+        .form-row label { display: block; font-size: 0.74rem; font-weight: 600; text-transform: uppercase; color: var(--text-muted); margin-bottom: 5px; }
+        .form-input {
+            width: 100%; padding: 11px 12px;
+            background: #0c0d10; border: 1px solid var(--border-subtle);
+            border-radius: 10px; color: #fff; font-family: var(--font-body);
+            font-size: 0.88rem; outline: none;
+        }
+        .form-input:focus { border-color: var(--gold-primary); }
+
+        .terms-scrollbox {
+            background: #0d0f12;
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 14px;
+            max-height: 165px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.55;
+            margin: 10px 0;
+        }
+        .terms-scrollbox p { margin-bottom: 8px; }
+        .terms-scrollbox strong { color: #fff; }
+
+        .consent-row {
+            display: flex; align-items: flex-start; gap: 10px; margin: 8px 0;
+            font-size: 0.78rem; color: #e5e7eb;
+        }
+        .consent-row input {
+            accent-color: var(--gold-primary);
+            width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; cursor: pointer;
+        }
+
+        .upi-box {
+            background: #0d0f13; border: 1px solid var(--border-gold);
+            border-radius: 12px; padding: 16px; text-align: center; margin: 14px 0;
+            display: none;
+        }
+        .upi-direct-btn {
+            display: block; width: 100%;
+            background: var(--gold-gradient); color: #000;
+            font-size: 0.9rem; font-weight: 700;
+            padding: 13px; border-radius: 10px; text-decoration: none;
+            margin-top: 10px; margin-bottom: 12px; text-align: center;
+        }
+        .cart-line { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border-subtle); font-size: 0.88rem; }
+        .sec-item { background: #0d0f12; border: 1px solid var(--border-gold); padding: 9px 12px; border-radius: 8px; font-size: 0.78rem; display: flex; align-items: center; gap: 8px; }
+    </style>
+</head>
+<body id="store">
+
+    <header>
+        <a href="#store" class="brand-cluster">
+            <div class="brand-logo-frame">
+                <img src="logo%20png_20261109_234248_0000.png" alt="Lowkey Loot Logo" class="brand-logo-img" onerror="this.onerror=null; this.src='logo.png';">
+            </div>
+            <span class="brand-title">Lowkey Loot</span>
+        </a>
+        <div class="nav-actions">
+            <a href="#termsModal" class="nav-btn" onclick="openModal('termsModal')">Rules & Privacy</a>
+            <a href="#securityModal" class="nav-btn" onclick="openModal('securityModal')">🔒 Security Audit</a>
+            <a href="#ordersModal" class="nav-btn" onclick="renderOrders(); openModal('ordersModal')">My Orders</a>
+            <a href="#cartModal" class="nav-btn nav-btn-gold" onclick="openModal('cartModal')">Bag (<span id="cartCount">0</span>)</a>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="hero-badge">🔒 SSL Secured // DPDP Act Compliant // Curated Drops</div>
+        <h1>Quality First.<br>Straight to You.</h1>
+        <p>Carefully selected everyday essentials and trending gear. 100% owner-verified order processing, complete data privacy, and secure UPI checkout.</p>
+    </section>
+
+    <main class="container">
+        <div class="products-grid">
+            <div class="product-card">
+                <div class="product-img-box">
+                    <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600" alt="Test Drop">
+                </div>
+                <div class="product-details">
+                    <div class="product-title">Test Order Item</div>
+                    <div class="product-desc">A sample product to test our order booking and quick UPI payments.</div>
+                    <div class="product-footer">
+                        <span class="product-price">₹10</span>
+                        <a href="#cartModal" class="btn-action" onclick="addToCart(1, 'Test Order Item', 10)">Add To Bag</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-img-box">
+                    <img src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=600" alt="Smart NFC Card">
+                </div>
+                <div class="product-details">
+                    <div class="product-title">Smart NFC Business Card</div>
+                    <div class="product-desc">Tap on any phone to instantly open your website, menu, or social links.</div>
+                    <div class="product-footer">
+                        <span class="product-price">₹799</span>
+                        <a href="#cartModal" class="btn-action" onclick="addToCart(2, 'Smart NFC Business Card', 799)">Add To Bag</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <div class="product-img-box">
+                    <img src="https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600" alt="Pro Ankle Support">
+                </div>
+                <div class="product-details">
+                    <div class="product-title">Pro Athlete Ankle Support</div>
+                    <div class="product-desc">Strong dual straps for sports safety, gym training, and jump stability.</div>
+                    <div class="product-footer">
+                        <span class="product-price">₹499</span>
+                        <a href="#cartModal" class="btn-action" onclick="addToCart(3, 'Pro Athlete Ankle Support', 499)">Add To Bag</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="legal-footer">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>Store & Legal Identity (Rule 6)</h4>
+                <p><strong>Store Name:</strong> Lowkey Loot</p>
+                <p><strong>Proprietor:</strong> Shaik Abdullah</p>
+                <p><strong>Registered Location:</strong> Telangana, India</p>
+                <p><strong>Support Email:</strong> lowkeyloot.official@gmail.com</p>
+            </div>
+            <div class="footer-col">
+                <h4>Grievance Officer (DPDP Rule 3)</h4>
+                <p><strong>Officer Name:</strong> Shaik Abdullah</p>
+                <p><strong>Contact:</strong> lowkeyloot.official@gmail.com</p>
+                <p><strong>Timeline:</strong> Complaints are acknowledged within 48 hours and resolved within 7 working days.</p>
+            </div>
+            <div class="footer-col">
+                <h4>Data Security & Breach Notice (Rule 8)</h4>
+                <p>Protected via HTTPS/SSL encryption and strict XSS input sanitization. Zero third-party tracking pixels. Any data breach is reported immediately to users and the Data Protection Board of India.</p>
+            </div>
+        </div>
+    </footer>
+
+    <div id="cookieBanner" class="cookie-banner">
+        <span><strong>Privacy & Storage Notice (Rule 4):</strong> We use zero spy pixels. We only use browser LocalStorage to save your bag and order history on your phone.</span>
+        <div style="display:flex; gap:8px;">
+            <button class="nav-btn nav-btn-gold" type="button" onclick="setStorageConsent(true)">Accept</button>
+            <button class="nav-btn" type="button" onclick="setStorageConsent(false)">Decline</button>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="cartModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-top">
+                <h3>Review Your Order</h3>
+                <a href="#store" class="modal-close" onclick="closeModal('cartModal')">✕</a>
+            </div>
+            <div id="cartItemsList">
+                <p style="color: #8e95a5; font-size: 0.85rem; padding: 10px 0;">Your shopping bag is empty.</p>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding: 12px 0; font-size: 1.15rem; font-weight: 700;">
+                <span>Total Amount:</span>
+                <span id="cartTotal" style="color: var(--gold-primary);">₹0</span>
+            </div>
+
+            <div class="form-row">
+                <label>Your Full Name</label>
+                <input type="text" id="custName" class="form-input" placeholder="Type your full name">
+            </div>
+            <div class="form-row">
+                <label>10-Digit Mobile Number</label>
+                <input type="tel" id="custPhone" class="form-input" maxlength="10" placeholder="Active 10-digit phone number">
+            </div>
+            <div class="form-row">
+                <label>Complete Delivery Address & PIN Code</label>
+                <textarea id="custAddress" rows="2" class="form-input" placeholder="House number, street, landmark, city, and pin code"></textarea>
+            </div>
+
+            <div class="form-row">
+                <label>Store Terms, Owner Verification & DPDP Privacy Notice</label>
+                <div class="terms-scrollbox">
+                    <p><strong>1. UPI Payment Only:</strong> Cash on Delivery (COD) is strictly NOT offered. All orders require 100% upfront payment via UPI to: <strong>6301015838@ibl</strong>.</p>
+                    <p><strong>2. Owner Order Verification & Confirmation Rule:</strong> Submitting an order registers your booking as <strong>"Pending Verification"</strong>. The store owner will personally verify your order details and check the UPI payment in our bank account before confirming your order.</p>
+                    <p><strong>3. Delivery Timeline:</strong> Standard delivery takes <strong>21 to 25 working days</strong> after owner confirmation.</p>
+                    <p><strong>4. Return & Refund Policy:</strong> No returns or cancellations once shipped. If an item is out of stock or not delivered within 25 working days, 100% of your payment is refunded to your UPI within 5 to 7 working days.</p>
+                    <p><strong>5. Broken or Missing Item (Video Required):</strong> You must record a single, continuous, unedited video while opening the sealed parcel and report damage within 48 hours.</p>
+                    <p><strong>6. Data Usage & Retention (DPDP Rule 1):</strong> Your Name, Phone, and Address are collected only to ship your order via our courier partners and are permanently deleted 60 days after delivery.</p>
+                </div>
+            </div>
+
+            <div class="consent-row">
+                <input type="checkbox" id="checkTerms" onchange="toggleUpiAccess()">
+                <label for="checkTerms"><strong>Store & Owner Verification Rule (Rule 5 & 6):</strong> I accept the 21–25 working days delivery timeline, advance UPI policy, unboxing video rule, and understand the owner will verify my payment to confirm the order.</label>
+            </div>
+            <div class="consent-row">
+                <input type="checkbox" id="checkPrivacy" onchange="toggleUpiAccess()">
+                <label for="checkPrivacy"><strong>Data Consent (Rule 1 & 2):</strong> I agree to share my name, phone, and address for courier delivery. I can withdraw consent anytime.</label>
+            </div>
+            <div class="consent-row">
+                <input type="checkbox" id="checkAge" onchange="toggleUpiAccess()">
+                <label for="checkAge"><strong>Age Verification (Rule 7):</strong> I confirm I am 18+ years old (or ordering with parent/guardian permission).</label>
+            </div>
+
+            <div id="upiPaymentSection" class="upi-box">
+                <p style="font-size: 0.78rem; color: var(--gold-primary); font-weight: 700; margin-bottom: 4px;">✓ ALL CONSENTS ACCEPTED • STEP 1: PAY VIA UPI</p>
+                <p style="font-size: 0.82rem; color: #fff; font-weight: 600;">UPI ID: 6301015838@ibl</p>
+                <a id="directUpiLink" href="upi://pay?pa=6301015838@ibl&pn=Lowkey%20Loot&cu=INR" class="upi-direct-btn">
+                    ⚡ Tap to Pay via UPI App (GPay / PhonePe)
+                </a>
+                <div style="text-align: left; margin-top: 8px; border-top: 1px solid var(--border-subtle); padding-top: 10px;">
+                    <label style="display:block; font-size:0.72rem;
